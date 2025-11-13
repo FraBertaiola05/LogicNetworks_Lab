@@ -1,0 +1,3 @@
+ghdl -a ParkinSystem.vhd
+ghdl -a ParkinSystemTB.vhd
+ghdl -r tb_car_parking --vcd=sim.vcd --stop-time=3000us

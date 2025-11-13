@@ -38,16 +38,20 @@ architecture arch of Car_Parking_System_VHDL is
 begin
     process(clk, reset_n) is
     begin
+        
+        if(reset_n='0') then
+            current_state <= IDLE;
+            counter_wait <="0000";
+            HEX_1 <= "1111111"; --off
+            HEX_2 <= "1111111"; --off
+            GREEN_LED <= '0';
+            RED_LED <= '0';
+        elsif(rising_edge(clk)) then
         --default
             HEX_1 <= "1111111"; --off
             HEX_2 <= "1111111"; --off
             GREEN_LED <= '0';
             RED_LED <= '0';
-
-        if(reset_n='0') then
-            current_state <= IDLE;
-            counter_wait <="0000";
-        elsif(rising_edge(clk)) then
             case current_state is
                 --idle state
                 when IDLE =>

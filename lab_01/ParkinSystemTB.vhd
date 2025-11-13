@@ -7,6 +7,7 @@ end tb_car_parking;
 
 architecture testbench of tb_car_parking is 
     component Car_Parking_System_VHDL is
+        generic(ClockFrequencyHz : integer := 50000000);
         port (
             clk : in std_logic;
             reset_n : in std_logic; -- Active low
@@ -79,7 +80,7 @@ begin
             report "  Car at front sensor. State should be WAIT_PASSWORD.";
             
             -- 2. Wait 10 clock cycles 
-            report "  Waiting 12 cycles for password delay...";
+            report "  Waiting 10 cycles for password delay...";
             wait for 10 * clk_period;
 
             -- 3. Input correct password 
@@ -186,7 +187,7 @@ begin
             report "  State should be WAIT_PASSWORD for Car 2.";
 
             -- 5. Process Car 2 normally
-            report "  Waiting 12 cycles for Car 2 password.";
+            report "  Waiting 10 cycles for Car 2 password.";
             wait for 10 * clk_period;
             report "  Entering correct password for Car 2.";
             password_1_tb <= "01";
