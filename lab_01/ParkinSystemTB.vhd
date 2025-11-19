@@ -18,7 +18,8 @@ architecture testbench of tb_car_parking is
             GREEN_LED : out std_logic;
             RED_LED : out std_logic;
             HEX_1 : out std_logic_vector(6 downto 0); 
-            HEX_2 : out std_logic_vector(6 downto 0)
+            HEX_2 : out std_logic_vector(6 downto 0);
+            car_count: out integer:=0
         );
     end component;
 -- testbanch signals 
@@ -34,6 +35,7 @@ architecture testbench of tb_car_parking is
     signal RED_LED_tb   : std_logic;
     signal HEX_1_tb     : std_logic_vector(6 downto 0);
     signal HEX_2_tb     : std_logic_vector(6 downto 0);
+    signal car_count_tb : integer := 0;
     
 -- 2. Added clock period constant
     constant clk_period : time := 20 ns;
@@ -51,7 +53,8 @@ begin
             GREEN_LED    => GREEN_LED_tb,
             RED_LED      => RED_LED_tb,
             HEX_1        => HEX_1_tb,
-            HEX_2        => HEX_2_tb
+            HEX_2        => HEX_2_tb,
+            car_count    => car_count_tb
         );
 
 
