@@ -207,9 +207,21 @@ begin
             password_1_tb   <= "00";
             password_2_tb   <= "00";
             wait for clk_period;
-
-            -- End simulation
             report "  Scenario 3 Complete. System should be IDLE.";
+    --** Scenario 4: Reset Test **
+        report "Starting Scenario 4: Reset Test";
+            front_sensor_tb <= '1';    
+            wait for 5 * clk_period;
+            report " System put into WAIT_PASSWORD state to test Reset.";
+            reset_n_tb <= '0';
+            report " Asserting Reset (reset_n = '0'). ";
+            wait for 2 * clk_period;
+            reset_n_tb <= '1' ;
+            front_sensor_tb <= '0';
+            report " Reset released. System should immediatly return IDLE and outputs cleared.";    
+            report " All scenarios complete  including Reset. Stopping simulation.";
+            
+            -- End Similation
             report "All scenarios complete. Stopping simulation.";
             wait;
     end process;
