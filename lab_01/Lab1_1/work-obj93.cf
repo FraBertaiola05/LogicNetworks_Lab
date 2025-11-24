@@ -1,0 +1,13 @@
+v 4
+file . "ParkinSystemTB.vhd" "64324cc4e5f06f95ca6b0ee250d50f56c58c835e" "20251124163006.408":
+  entity tb_car_parking at 2( 1) + 0 on 17;
+  architecture testbench of tb_car_parking at 8( 92) + 0 on 18;
+file . "Prescaler.vhd" "e50e50486f6737d7306e1aba47f4aca2719eb494" "20251124162929.905":
+  entity prescaler at 1( 0) + 0 on 13;
+  architecture behavioral of prescaler at 16( 271) + 0 on 14;
+file . "LedBlock.vhd" "1e11fcc4fb49bef43fdc211fe46a99e2eb6c0e67" "20251124162916.201":
+  entity led_block at 1( 0) + 0 on 11;
+  architecture behavioral of led_block at 13( 221) + 0 on 12;
+file . "ParkinSystem.vhd" "c600a7ab2f194a5e8cdc500b07742db1e4c483ae" "20251124162946.070":
+  entity car_parking_system_vhdl at 1( 0) + 0 on 15;
+  architecture arch of car_parking_system_vhdl at 23( 640) + 0 on 16;
