@@ -1,0 +1,6 @@
+ghdl -a LedBlock.vhd
+ghdl -a Prescaler.vhd
+ghdl -a ParkinSystem.vhd
+ghdl -a ParkinSystemTB.vhd
+ghdl -e tb_car_parking
+ghdl -r tb_car_parking --vcd=sim.vcd --stop-time=3000us
