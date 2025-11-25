@@ -73,6 +73,7 @@ architecture Behavioral of Parking_Controller is
     
     -- Payment signals
     signal payment_accepted_Gout1, payment_accepted_Gout2 : std_logic;
+    signal payment_request_1, payment_request_2 : std_logic;
 
     function int_to_7seg(value : integer) return std_logic_vector is
     variable result : std_logic_vector(6 downto 0);
@@ -104,7 +105,7 @@ begin
         case state_Gin1 is
             when IDLE =>
                 -- Check for car arrival and capacity
-                if sensor_A_Gin1 = '1' and car_count < PARKING_CAPACITY then
+                if sensor_A_Gin1 = '1' and car_count <= PARKING_CAPACITY then
                     next_state_Gin1 <= CAR_DETECTED;
                 end if;
                 
@@ -147,7 +148,7 @@ begin
         case state_Gin2 is
             when IDLE =>
                 -- Check for car arrival and capacity
-                if sensor_A_Gin2 = '1' and car_count < PARKING_CAPACITY then
+                if sensor_A_Gin2 = '1' and car_count <= PARKING_CAPACITY then
                     next_state_Gin2 <= CAR_DETECTED;
                 end if;
                 
@@ -187,7 +188,7 @@ begin
         -- Default values
         next_state_Gout1 <= state_Gout1;
         barrier_Gout1 <= '0';
-        payment_request <= '0';
+        payment_request_1 <= '0';
         payment_accepted_Gout1 <= '0';
         dec_Gout1 <= '0';
         
@@ -199,7 +200,7 @@ begin
                 -- TODO: Detect car and check if parking has cars
                 
             when WAIT_PAYMENT =>
-                payment_request <= '1';  -- Turn on payment light
+                payment_request_1 <= '1';  -- Turn on payment light
                 -- TODO: Wait for payment or car to leave
                 if (sensor_A_Gout1 = '0') then
                     next_state_Gout1 <= IDLE;  -- Car backed out
@@ -240,7 +241,7 @@ begin
         -- Default values
         next_state_Gout2 <= state_Gout2;
         barrier_Gout2 <= '0';
-        payment_request <= '0';
+        payment_request_2 <= '0';
         payment_accepted_Gout2 <= '0';
         dec_Gout2 <= '0';
         
@@ -252,7 +253,7 @@ begin
                 -- TODO: Detect car and check if parking has cars
                 
             when WAIT_PAYMENT =>
-                payment_request <= '1';  -- Turn on payment light
+                payment_request_2 <= '1';  -- Turn on payment light
                 -- TODO: Wait for payment or car to leave
                 if (sensor_A_Gout2 = '0') then
                     next_state_Gout2 <= IDLE;  -- Car backed out
@@ -315,7 +316,7 @@ begin
         display <= int_to_7seg(PARKING_CAPACITY - car_count);
 
         -- GREEN LIGHT
-        if car_count < PARKING_CAPACITY then
+        if car_count <= PARKING_CAPACITY then
             Green_Light <= '1';
         else
             Green_Light <= '0';
@@ -330,6 +331,7 @@ begin
     end process;
 
     payment_accepted <= payment_accepted_Gout1 or payment_accepted_Gout2;
+    payment_request <= payment_request_1 or payment_request_2;
 
     stateregister: process(clk, nrst)
     begin
