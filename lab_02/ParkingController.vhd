@@ -279,7 +279,6 @@ begin
                 end if;
                 
             when CAR_EXITED =>
-                barrier_Gout2 <= '1';
                 -- TODO: Return to IDLE and decrement counter
                 if (sensor_B_Gout2_prev = '1' and sensor_B_Gout2 = '0') then
                     next_state_Gout2 <= IDLE;
@@ -295,14 +294,20 @@ begin
             car_count <= 0;
         elsif rising_edge(clk) then
             -- Handle increments from entry gates
-            if inc_Gin1 = '1' then
-                car_count <= car_count + 1;
+            if inc_Gin1 = '1' and inc_Gin2 = '1' then
+                car_count <= car_count + 2;
             elsif inc_Gin2 = '1' then
                 car_count <= car_count + 1;
+            elsif inc_Gin1 = '1' then
+                car_count <= car_count + 1;
             -- Handle decrements from exit gates
-            elsif dec_Gout1 = '1' then
-                car_count <= car_count - 1;
+            end if;
+
+            if dec_Gout1 = '1' and dec_Gout2 = '1' then
+                car_count <= car_count - 2;
             elsif dec_Gout2 = '1' then
+                car_count <= car_count - 1;
+            elsif dec_Gout1 = '1' then
                 car_count <= car_count - 1;
             end if;
         end if;
