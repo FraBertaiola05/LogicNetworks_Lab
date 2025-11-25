@@ -105,7 +105,7 @@ begin
         case state_Gin1 is
             when IDLE =>
                 -- Check for car arrival and capacity
-                if sensor_A_Gin1 = '1' and car_count <= PARKING_CAPACITY then
+                if sensor_A_Gin1 = '1' and car_count < PARKING_CAPACITY then
                     next_state_Gin1 <= CAR_DETECTED;
                 end if;
                 
@@ -148,7 +148,7 @@ begin
         case state_Gin2 is
             when IDLE =>
                 -- Check for car arrival and capacity
-                if sensor_A_Gin2 = '1' and car_count <= PARKING_CAPACITY then
+                if sensor_A_Gin2 = '1' and car_count < PARKING_CAPACITY then
                     next_state_Gin2 <= CAR_DETECTED;
                 end if;
                 
@@ -316,7 +316,7 @@ begin
         display <= int_to_7seg(PARKING_CAPACITY - car_count);
 
         -- GREEN LIGHT
-        if car_count <= PARKING_CAPACITY then
+        if car_count < PARKING_CAPACITY then
             Green_Light <= '1';
         else
             Green_Light <= '0';

@@ -184,7 +184,9 @@ begin
         wait for 5 us;
         assert barrier_Gin1 = '0' report "Part 3: Barrier of Gin1 should remain closed as this is an input gate" severity warning;
         
-        -- Now the car exits properly from Gout2
+        -- Now the car exits properly from Gout2 so the sensor back of Gin1 deactivates
+        sensor_back_Gin1 <= '0';
+        wait for 10 us;
         sensor_front_Gout2 <= '1';
         wait for 2 us;
         -- Payment system simulation
