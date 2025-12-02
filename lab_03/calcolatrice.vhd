@@ -12,9 +12,18 @@ entity calcolatrice is
     -- * One input for the "SW" switches
     -- * One output for the "LED" LEDs
     -- * Inputs for the "BTNC, BTNU, BTNL, BTNR, BTND" buttons
+    clock  : in  std_logic;
+    reset  : in  std_logic;
+    SW     : in  std_logic_vector( 15 downto 0 );
+    LED    : out std_logic_vector( 15 downto 0 );
+    BTNC   : in  std_logic;
+    BTNU   : in  std_logic;
+    BTNL   : in  std_logic;
+    BTNR   : in  std_logic;
+    BTND   : in  std_logic;
 	
     CA, CB, CC, CD, CE, CF, CG, DP : out std_logic; --! modify the constraint file accordingly
-    AN : out std_logic_vector( 7 downto 0 );
+    AN : out std_logic_vector( 7 downto 0 )
 
   );
 end calcolatrice;
@@ -47,22 +56,37 @@ begin
   
   up_detect : entity work.debouncer(Behavioral)
   port map (
-    -- link and connect the button
+    clock   => clock,
+    reset   => reset,
+    bouncy  => BTNU,
+    pulse   => up_edge
   );
   
   down_detect : entity work.debouncer(Behavioral)
   port map (
     -- link and connect the button
+    clock   => clock,
+    reset   => reset,
+    bouncy  => BTND,
+    pulse   => down_edge
   );
   
   left_detect : entity work.debouncer(Behavioral)
   port map (
     -- link and connect the button
+    clock   => clock,
+    reset   => reset,
+    bouncy  => BTNL,
+    pulse   => left_edge
   );
 
   right_detect : entity work.debouncer(Behavioral)
   port map (
     -- link and connect the button
+    clock   => clock,
+    reset   => reset,
+    bouncy  => BTNR,
+    pulse   => right_edge
   );
   
   -- Instantiate the seven segment display driver
@@ -95,22 +119,34 @@ begin
   the_alu : entity work.alu( Behavioral ) port map (
 -- Connect the alu to the accumulator and switches. 
 -- It also connects the internal signals to establish the operation
+    a        => acc_out,
+    b        => signed( sw_input ),
+    add      => do_add,
+    subtract => do_sub,
+    multiply => do_mult,
+    divide   => do_div,
+    r        => signed( acc_in )
   );
 -- Assigns the output of the corresponding debouncers to the internal signals
   do_add  <= up_edge;
-  do_sub  <= ...
-  do_mult <= ...
-  do_div  <= ..
+  do_sub  <= left_edge;
+  do_mult <= right_edge;
+  do_div  <= down_edge;
    
   -- Declaration accumulator
   the_accumulator : entity work.accumulator( Behavioral )
   port map(
-    -- Connect accumulator
+    clock      => clock,
+    reset      => reset,
+    acc_init   => acc_init,
+    acc_enable => acc_enable,
+    acc_in     => acc_in,
+    acc_out    => acc_out
   );
  -- Assigns the output value to display value
-  display_value <= std_logic_vector( ... );
+  display_value <= std_logic_vector( acc_out );
    -- Assign acc_enable and acc_init as delivered
-  acc_enable <= ...
-  acc_init <= ...;
+  acc_enable <= '1';
+  acc_init <= center_edge;
 
 end Behavioral;
