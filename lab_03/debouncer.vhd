@@ -12,6 +12,10 @@ entity debouncer is
     -- * A "reset" reset input
     -- * An input for the "bouncy" button
     -- * One output for the "pulse" pulse
+    clock   : in  std_logic;
+    reset   : in  std_logic;
+    bouncy  : in  std_logic;
+    pulse   : out std_logic
   );
 end debouncer;
 
@@ -22,24 +26,34 @@ architecture behavioral of debouncer is
   -- * candidate_value: Keep track of the candidate stable value
   -- * stable_value: Keep track of the current stable value
   -- * delayed_stable_value: Delayed version of stable value to generate output
+  signal counter              : unsigned( counter_size - 1 downto 0 );
+  signal candidate_value      : std_logic;
+  signal stable_value         : std_logic;
+  signal delayed_stable_value : std_logic;
 begin
 
   process ( clock, reset ) begin
     if reset = '0' then
       -- reset counter, stable and candidate value
+      counter         <= (others => '0');
+      candidate_value <= '0';
+      stable_value    <= '0';
     elsif rising_edge( clock ) then
       -- Check whether the signal is stable
       if bouncy = candidate_value then
         -- Stable signal. Check for how long
         if counter = 0 then
           -- Update stable value
+          stable_value <= candidate_value;
           
         else
          -- Decrement the counter
-          
+          counter <= counter - 1;
         end if;
       else
         -- Signal not stable. Update the candidate value and reset the counter
+        candidate_value <= bouncy;
+        counter         <= (others => '1'); -- Load the counter with max value
       end if;
     end if;
   end process;
@@ -48,13 +62,15 @@ begin
   process ( clock, reset ) begin
     if reset = '0' then
       -- Assignment of reset value
+      delayed_stable_value <= '0';
     elsif rising_edge( clock ) then
       -- Value assignment to each clock cycle
+      delayed_stable_value <= stable_value;
     end if;
   end process;
 
   -- Generate output pulse
-  pulse <= '1' when stable_value = ... and delayed_stable_value = ... else
+  pulse <= '1' when stable_value = '1' and delayed_stable_value = '0' else --detect rising edge of stable_value
            '0';
 
 end behavioral;

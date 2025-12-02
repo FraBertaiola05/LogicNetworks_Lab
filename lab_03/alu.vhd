@@ -10,6 +10,13 @@ entity alu is
     -- * A 16 bit signed "b" input
     -- * 4 binary inputs for selecting the "add, subtract, multiply, divide" operation
     -- * A 16 bit signed "r" output
+    a        : in  signed( 15 downto 0 );
+    b        : in  signed( 15 downto 0 );
+    add      : in  std_logic;
+    subtract : in  std_logic;
+    multiply : in  std_logic;
+    divide   : in  std_logic;
+    r        : out signed( 15 downto 0 )
   );
 end alu;
 
@@ -24,8 +31,11 @@ begin
 
     if add = '1' then
       r <= a + b;
-    elsif ...
-    elsif ...
+    elsif subtract = '1' then
+      r <= a - b;
+    elsif multiply = '1' then
+      moltiplica <= a * b;
+      r <= moltiplica( 15 downto 0 );  -- prendo i bit meno significativi
     elsif divide = '1' then
       r <= a + b;                  -- simplify the division by putting something simpler
     end if;
