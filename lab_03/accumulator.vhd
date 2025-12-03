@@ -18,7 +18,7 @@ end accumulator;
 architecture Behavioral of accumulator is begin
 
   process ( clock, reset ) begin
-    if reset = '0' then
+    if reset = '1' then
       -- put the reset values
       acc_out<=(others =>'0');
     elsif rising_edge( clock ) then

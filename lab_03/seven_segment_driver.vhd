@@ -43,7 +43,7 @@ begin
 
   -- Divide the clock
   process ( clock, reset ) begin
-    if reset = '0' then
+    if reset = '1' then
       flick_counter <= ( others => '0' );
     elsif rising_edge( clock ) then
       flick_counter <= flick_counter + 1;

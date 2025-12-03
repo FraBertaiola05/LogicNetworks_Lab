@@ -33,7 +33,7 @@ architecture behavioral of debouncer is
 begin
 
   process ( clock, reset ) begin
-    if reset = '0' then
+    if reset = '1' then
       -- reset counter, stable and candidate value
       counter         <= (others => '1');
       candidate_value <= '0';
