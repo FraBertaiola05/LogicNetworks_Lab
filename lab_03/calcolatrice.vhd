@@ -23,7 +23,7 @@ entity calcolatrice is
     BTND   : in  std_logic;
 	
     CA, CB, CC, CD, CE, CF, CG, DP : out std_logic; --! modify the constraint file accordingly
-    AN : out std_logic_vector( 7 downto 0 )
+    AN : out std_logic_vector( 3 downto 0 )
 
   );
 end calcolatrice;
@@ -92,7 +92,7 @@ begin
   -- Instantiate the seven segment display driver
   thedriver : entity work.seven_segment_driver( Behavioral ) 
   generic map ( 
-     size => 21 
+     size => 20
   ) port map (
     clock => clock,
     reset => reset,
