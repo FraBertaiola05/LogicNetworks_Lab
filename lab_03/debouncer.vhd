@@ -60,7 +60,7 @@ begin
 
   -- Process that creates a delayed version of the stable signal (delayed_stable_value)
   process ( clock, reset ) begin
-    if reset = '0' then
+    if reset = '1' then
       -- Assignment of reset value
       delayed_stable_value <= '0';
     elsif rising_edge( clock ) then
