@@ -5,8 +5,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 -- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
+-- Uncomment the following library declaration if instANtiating
+-- ANy Xilinx leaf cells in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
@@ -50,7 +50,7 @@ begin
     end if;
   end process;
 
-  -- Select the anode
+  -- Select the ANode
   with flick_counter( size - 1 downto size - 3 ) select
     AN <=
       "1110" when "00",

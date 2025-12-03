@@ -9,9 +9,9 @@ entity accumulator is
     clock : in std_logic;-- * One input for the clock                           "clock"
     reset : in std_logic; -- * One input for the reset                           "reset"
     acc_init : in std_logic;-- * The input that reset the outputs (Central Button) "acc_init".
-    acc_enable : in std_logic;-- * An input that enables the out of the accumulator  "acc_enable"
-    acc_in : in signed (15 downto 0);-- * An ipunt of a 16 bit signed                        "acc_in"
-    acc_out : out signed (15 downto 0)-- * An output of a 16 bit signed                       "acc_out"
+    acc_enable : in std_logic;-- * AN input that enables the out of the accumulator  "acc_enable"
+    acc_in : in signed (15 downto 0);-- * AN ipunt of a 16 bit signed                        "acc_in"
+    acc_out : out signed (15 downto 0)-- * AN output of a 16 bit signed                       "acc_out"
   );
 end accumulator;
 

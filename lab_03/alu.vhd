@@ -25,7 +25,7 @@ architecture Behavioral of alu is
   signal moltiplica : signed( 31 downto 0 );
 begin
 
-  -- Processo viene eseguito ad ogni variazione su operandi e operazione selezionata
+  -- Processo viene eseguito ad ogni variazione su operANdi e operazione selezionata
   process ( a, b, add, subtract, multiply, divide, moltiplica ) begin
     r <= a;                        -- assegnazione di default
 
