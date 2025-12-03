@@ -146,7 +146,7 @@ begin
  -- Assigns the output value to display value
   display_value <= std_logic_vector( acc_out );
    -- Assign acc_enable and acc_init as delivered
-  acc_enable <= '1';
+  acc_enable <= right_edge or left_edge or up_edge or down_edge;
   acc_init <= center_edge;
 
 end Behavioral;
