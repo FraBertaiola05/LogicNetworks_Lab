@@ -92,7 +92,7 @@ begin
   -- InstANtiate the seven segment display driver
   thedriver : entity work.seven_segment_driver( Behavioral ) 
   generic map ( 
-     size => 21 
+     size => 20
   ) port map (
     clock => clock,
     reset => reset,
