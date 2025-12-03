@@ -36,8 +36,8 @@ begin
   end process;
 
   process begin
-    reset <= '0'; wait for 130 ns;
-    reset <= '1';
+    reset <= '1'; wait for 130 ns;
+    reset <= '0';
     wait;
   end process;
 

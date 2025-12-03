@@ -1,99 +1,103 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
 
--- Uncomment the following library declaration if instANtiating
--- ANy Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity seven_segment_driver is
-  generic (
-    size : integer := 20
-  );
-  Port (
-    clock : in std_logic;
-    reset : in std_logic;
-    digit0 : in std_logic_vector( 3 downto 0 );
-    digit1 : in std_logic_vector( 3 downto 0 );
-    digit2 : in std_logic_vector( 3 downto 0 );
-    digit3 : in std_logic_vector( 3 downto 0 );
-    CA, CB, CC, CD, CE, CF, CG, DP : out std_logic;
-    AN : out std_logic_vector( 3 downto 0 )
-  );
-
+    generic (
+        size : integer := 20
+    );
+    Port (
+        clock : in std_logic;
+        reset : in std_logic; -- Active High Reset
+        digit0 : in std_logic_vector( 3 downto 0 ); -- Rightmost digit
+        digit1 : in std_logic_vector( 3 downto 0 );
+        digit2 : in std_logic_vector( 3 downto 0 );
+        digit3 : in std_logic_vector( 3 downto 0 ); -- Leftmost digit
+        CA, CB, CC, CD, CE, CF, CG, DP : out std_logic;
+        AN : out std_logic_vector( 3 downto 0 )
+    );
 end seven_segment_driver;
 
 architecture Behavioral of seven_segment_driver is
 
-  -- We will use a counter to derive the frequency for the displays
-  -- Clock is 100 MHz, we use 3 bits to address the display, so we count every
-  -- size - 3 bits. To get ~100 Hz per digit, we need 20 bits, so that we divide
-  -- by 2^20.
-  signal flick_counter : unsigned( size - 1 downto 0 );
-  -- The digit is temporarily stored here
-  signal digit : std_logic_vector( 3 downto 0 );
-  -- Collect the values of the cathodes here
-  signal cathodes : std_logic_vector( 7 downto 0 );
+    -- We use a counter to derive the frequency.
+    -- We only need the top 2 bits to select 4 displays (00, 01, 10, 11).
+    signal flick_counter : unsigned( size - 1 downto 0 ) := (others => '0');
+    
+    -- The digit to be currently displayed
+    signal digit_to_display : std_logic_vector( 3 downto 0 );
+    
+    -- Helper signal for the multiplexing selection (2 bits)
+    signal mux_select : std_logic_vector(1 downto 0);
+    
+    -- Collect the values of the cathodes here
+    signal cathodes : std_logic_vector( 7 downto 0 );
 
 begin
 
-  -- Divide the clock
-  process ( clock, reset ) begin
-    if reset = '1' then
-      flick_counter <= ( others => '0' );
-    elsif rising_edge( clock ) then
-      flick_counter <= flick_counter + 1;
-    end if;
-  end process;
+    -- Process: Counter with Active High Reset
+    process ( clock, reset ) begin
+        if reset = '1' then
+            flick_counter <= ( others => '0' );
+        elsif rising_edge( clock ) then
+            flick_counter <= flick_counter + 1;
+        end if;
+    end process;
 
-  -- Select the ANode
-  with flick_counter( size - 1 downto size - 3 ) select
-    AN <=
-      "1110" when "00",
-      "1101" when "01",
-      "1011" when "10",
-      "0111" when others;
+    -- Helper: Select the top 2 bits for 4-state multiplexing
+    mux_select <= std_logic_vector(flick_counter( size - 1 downto size - 2 ));
 
-  -- Select the digit
-  with flick_counter( size - 1 downto size - 3 ) select
-    digit <=
-      digit0 when "000",
-      digit1 when "001",
-      digit2 when "010",
-      digit3 when others;
+    -- Mux: Select both the Anode and the Data Source based on the counter
+    process(mux_select, digit0, digit1, digit2, digit3)
+    begin
+        case mux_select is
+            when "00" =>
+                AN <= "1110";             -- Activate Anode 0 (Rightmost)
+                digit_to_display <= digit0;
+            when "01" =>
+                AN <= "1101";             -- Activate Anode 1
+                digit_to_display <= digit1;
+            when "10" =>
+                AN <= "1011";             -- Activate Anode 2
+                digit_to_display <= digit2;
+            when "11" =>
+                AN <= "0111";             -- Activate Anode 3 (Leftmost)
+                digit_to_display <= digit3;
+            when others =>
+                AN <= "1111";             -- Turn off all
+                digit_to_display <= (others => '0');
+        end case;
+    end process;
 
-  -- Decode the digit
-  with digit select
-    cathodes <=
-      -- DP, CG, CF, CE, CD, CC, CB, CA
-      "11000000" when "0000",
-      "11111001" when "0001",
-      "10100100" when "0010",
-      "10110000" when "0011",
-      "10011001" when "0100",
-      "10010010" when "0101",
-      "10000010" when "0110",
-      "11111000" when "0111",
-      "10000000" when "1000",
-      "10010000" when "1001",
-      "10001000" when "1010",
-      "10000011" when "1011",
-      "11000110" when "1100",
-      "10100001" when "1101",
-      "10000110" when "1110",
-      "10001110" when others;
+    -- Decoder: Hex to 7-Segment (Active Low Cathodes)
+    with digit_to_display select
+        cathodes <=
+            -- DP, G, F, E, D, C, B, A  (Mapping: 0 is ON, 1 is OFF)
+            "11000000" when "0000", -- 0
+            "11111001" when "0001", -- 1
+            "10100100" when "0010", -- 2
+            "10110000" when "0011", -- 3
+            "10011001" when "0100", -- 4
+            "10010010" when "0101", -- 5
+            "10000010" when "0110", -- 6
+            "11111000" when "0111", -- 7
+            "10000000" when "1000", -- 8
+            "10010000" when "1001", -- 9
+            "10001000" when "1010", -- A
+            "10000011" when "1011", -- b
+            "11000110" when "1100", -- C
+            "10100001" when "1101", -- d
+            "10000110" when "1110", -- E
+            "10001110" when others; -- F
 
-  DP <= cathodes( 7 );
-  CG <= cathodes( 6 );
-  CF <= cathodes( 5 );
-  CE <= cathodes( 4 );
-  CD <= cathodes( 3 );
-  CC <= cathodes( 2 );
-  CB <= cathodes( 1 );
-  CA <= cathodes( 0 );
+    -- Map internal cathode signal to physical ports
+    DP <= cathodes( 7 );
+    CG <= cathodes( 6 );
+    CF <= cathodes( 5 );
+    CE <= cathodes( 4 );
+    CD <= cathodes( 3 );
+    CC <= cathodes( 2 );
+    CB <= cathodes( 1 );
+    CA <= cathodes( 0 );
 
-end behavioral;
+end Behavioral;
