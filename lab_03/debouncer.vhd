@@ -26,7 +26,7 @@ architecture behavioral of debouncer is
   -- * candidate_value: Keep track of the candidate stable value
   -- * stable_value: Keep track of the current stable value
   -- * delayed_stable_value: Delayed version of stable value to generate output
-  signal counter              : unsigned( counter_size - 1 downto 0 );
+  signal counter              : unsigned( counter_size - 1 downto 0 ) := (others => '1');
   signal candidate_value      : std_logic;
   signal stable_value         : std_logic;
   signal delayed_stable_value : std_logic;
@@ -35,7 +35,7 @@ begin
   process ( clock, reset ) begin
     if reset = '0' then
       -- reset counter, stable and candidate value
-      counter         <= (others => '0');
+      counter         <= (others => '1');
       candidate_value <= '0';
       stable_value    <= '0';
     elsif rising_edge( clock ) then
