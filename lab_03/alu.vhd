@@ -37,7 +37,7 @@ begin
       moltiplica <= a * b;
       r <= moltiplica( 15 downto 0 );  -- prendo i bit meno significativi
     elsif divide = '1' then
-      r <= a + b;                  -- simplify the division by putting something simpler
+      r <= a / b;                  -- simplify the division by putting something simpler
     end if;
   end process;
 

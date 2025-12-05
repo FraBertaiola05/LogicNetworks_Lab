@@ -32,3 +32,4 @@ architecture Behavioral of accumulator is begin
     end if;
   end process;
 end Behavioral;
+
