@@ -10,7 +10,8 @@ entity main_piggame is
         CLK : in std_logic; --! Clock input
         LED : out std_logic_vector(15 downto 0); --! LEDs for output
         SSEG_CAT : out std_logic_vector(7 downto 0); --! Seven Segment Cathodes
-        SSEG_AN : out std_logic_vector(3 downto 0) --! Seven Segment Anodes
+        SSEG_AN : out std_logic_vector(3 downto 0); --! Seven Segment Anodes
+        RST : in std_logic --! Reset input
     );
 end entity main_piggame;
 
@@ -108,8 +109,111 @@ component controluint
 end component;
 
 begin
-    --PROCESSES--
+    --COMPONENT INSTANTIATIONS--
+    center_detect: debouncer
+    port map(
+        clock => CLK,
+        reset => RST,
+        bouncy => BTN(0),
+        pulse => center_edge
+    );
 
+    up_detect: debouncer
+    port map(
+        clock => CLK,
+        reset => RST,
+        bouncy => BTN(1),
+        pulse => up_edge
+    );
+
+    down_detect: debouncer
+    port map(
+        clock => CLK,
+        reset => RST,
+        bouncy => BTN(3),
+        pulse => down_edge
+    );
+
+    right_detect: debouncer
+    port map(
+        clock => CLK,
+        reset => RST,
+        bouncy => BTN(4),
+        pulse => right_edge
+    );
+
+    left_detect: debouncer
+    port map(
+        clock => CLK,
+        reset => RST,
+        bouncy => BTN(2),
+        pulse => left_edge
+    );
+
+    thedriver: seven_segment_driver
+    port map(
+        clock => CLK,
+        reset => RST,
+        digit0 => digit0,
+        digit1 => digit1,
+        digit2 => digit2,
+        digit3 => digit3,
+        CA => SSEG_CAT(0),
+        CB => SSEG_CAT(1),
+        CC => SSEG_CAT(2),
+        CD => SSEG_CAT(3),
+        CE => SSEG_CAT(4),
+        CF => SSEG_CAT(5),
+        CG => SSEG_CAT(6),
+        DP => SSEG_CAT(7),
+        AN => SSEG_AN
+    );
+
+    datapath_inst : datapath
+    port map(
+        clock  => CLK,
+        reset  => RST,
+        ENADIE => ENADIE,
+        LDSU   => LDSU,
+        LDT1   => LDT1,
+        LDT2   => LDT2,
+        RSSU   => RSSU,
+        RST1   => RST1,
+        RST2   => RST2,
+        CP     => CP,
+        FP     => FP,
+        DIGIT0 => digit0,
+        DIGIT1 => digit1,
+        DIGIT2 => digit2,
+        DIGIT3 => digit3,
+        LEDDIE => LED(2 downto 0),
+        DIE1   => DIE1,
+        WN     => WIN
+    );
+
+    controlunit_inst : controluint
+    port map(
+        clock  => CLK,
+        reset  => RST,
+        ENADIE => ENADIE,
+        LDSU   => LDSU,
+        LDT1   => LDT1,
+        LDT2   => LDT2,
+        RSSU   => RSSU,
+        RST1   => RST1,
+        RST2   => RST2,
+        CP     => CP,
+        FP     => FP,
+        DIGIT0 => digit0,
+        DIGIT1 => digit1,
+        DIGIT2 => digit2,
+        DIGIT3 => digit3,
+        LEDDIE => LED(2 downto 0),
+        DIE1   => DIE1,
+        WN     => WIN
+    );
+    
+    --PROCESSES--
     time_blink_process: process(CLK) begin
     end process time_blink_process;
 
