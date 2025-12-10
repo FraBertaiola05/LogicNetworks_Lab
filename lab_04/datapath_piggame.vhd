@@ -55,11 +55,11 @@ architecture rtl of datapath is
 -- definition of constants
 constant frontbits : std_logic_vector(3 downto 0) := (others => '0'); --! bits to be added in front of DIE register for transfer into SUR register
 -- definition of the signals
-signal TR1 : std_logic_vector(6 downto 0) := (others =>'0'); --! Register TR1
-signal TR2 : std_logic_vector(6 downto 0) := (others =>'0'); --! Register TR2
-signal SUR : std_logic_vector(6 downto 0) := (others =>'0'); --! Register SUR
-signal DIE : std_logic_vector(2 downto 0); --! Register DIE register
-signal D   : std_logic_vector(6 downto 0) := (others =>'0'); --! Register D
+signal TR1 : std_logic_vector(6 downto 0) := (others =>'0'); --! Register TR1 (register score player 1)
+signal TR2 : std_logic_vector(6 downto 0) := (others =>'0'); --! Register TR2 (register score player 2)
+signal SUR : std_logic_vector(6 downto 0) := (others =>'0'); --! Register SUR (temporary score)
+signal DIE : std_logic_vector(2 downto 0); --! Register DIE register (holds die value)
+signal D   : std_logic_vector(6 downto 0) := (others =>'0'); --! Register D 
 signal bcd1 : std_logic_vector(3 downto 0):= (others =>'0'); --! result of conversion of TR1 in bcd
 signal bcd2 : std_logic_vector(3 downto 0):= (others =>'0'); --! result of conversion of TR1 in bcd
 signal bcd3 : std_logic_vector(3 downto 0):= (others =>'0'); --! result of conversion of TR2 in bcd
