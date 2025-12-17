@@ -4,10 +4,9 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity main_piggame is
     port(
-        SW       : in std_logic_vector(15 downto 0);
         BTN      : in std_logic_vector(4 downto 0); -- BTN(0):Center, BTN(1):Up, BTN(2):Left
         CLK      : in std_logic;
-        LED      : out std_logic_vector(2 downto 0);
+        LED      : out std_logic_vector(15 downto 0);
         SSEG_CAT : out std_logic_vector(7 downto 0);
         SSEG_AN  : out std_logic_vector(3 downto 0);
         RST      : in std_logic
@@ -37,15 +36,31 @@ architecture behavioural of main_piggame is
     -- component debouncer ... end component;
 
     component seven_segment_driver
-        port(
-            clock : in std_logic;
-            reset : in std_logic;
-            digit0 : in std_logic_vector( 3 downto 0 );
-            digit1 : in std_logic_vector( 3 downto 0 );
-            digit2 : in std_logic_vector( 3 downto 0 );
-            digit3 : in std_logic_vector( 3 downto 0 );
-            CA, CB, CC, CD, CE, CF, CG, DP : out std_logic;
-            AN : out std_logic_vector( 3 downto 0 )
+        generic (
+            size : integer := 20
+        );
+        Port (
+            clock  : in std_logic;
+            reset  : in std_logic;
+            digit0 : in std_logic_vector(3 downto 0);
+            digit1 : in std_logic_vector(3 downto 0);
+            digit2 : in std_logic_vector(3 downto 0);
+            digit3 : in std_logic_vector(3 downto 0);
+            CA     : out std_logic_vector(7 downto 0);
+            AN     : out std_logic_vector(3 downto 0)
+        );
+    end component;
+
+        component debouncer
+        generic (
+            counter_size : integer := 20 -- Increase size for slower clock/human press
+        );
+        port (
+            clock     : in std_logic;
+            reset     : in std_logic;
+            bouncy    : in std_logic;
+            pulse     : out std_logic;
+            debounced : out std_logic
         );
     end component;
 
@@ -102,26 +117,21 @@ begin
     -- Qui colleghiamo direttamente il pulsante fisico al segnale logico.
     -- Nota: In simulazione è perfetto. Su hardware reale potrebbe fare
     -- qualche rimbalzo ("bounce"), ma per questo gioco spesso è tollerabile.
-    
-    ROLL    <= BTN(0); -- Tasto Centro = Lancia Dado
-    NEWGAME <= BTN(1); -- Tasto Su     = Nuova Partita
-    HOLD    <= BTN(2); -- Tasto Sinistra = Tieni Punteggio
-
     -- =========================================================================
     -- ISTANZIAZIONI COMPONENTI
     -- =========================================================================
 
-    thedriver: seven_segment_driver
+    driver: seven_segment_driver
+    generic map( size => 18 ) -- 18 bits for refresh rate approx 380Hz
     port map(
-        clock  => CLK,
-        reset  => RST,
-        digit0 => digit0,
-        digit1 => digit1,
-        digit2 => digit2,
-        digit3 => digit3,
-        CA => SSEG_CAT(0), CB => SSEG_CAT(1), CC => SSEG_CAT(2), CD => SSEG_CAT(3),
-        CE => SSEG_CAT(4), CF => SSEG_CAT(5), CG => SSEG_CAT(6), DP => SSEG_CAT(7),
-        AN => SSEG_AN
+        clock   => CLK,
+        reset   => RST,
+        digit0  => digit0,
+        digit1  => digit1,
+        digit2  => digit2,
+        digit3  => digit3,
+        CA      => SSEG_CAT,
+        AN      => SSEG_AN
     );
 
     datapath_inst : datapath
@@ -151,8 +161,8 @@ begin
         clock   => CLK,
         reset   => RST,
         ROLL    => ROLL,    -- Collegato diretto a BTN(0)
-        HOLD    => HOLD,    -- Collegato diretto a BTN(2)
-        NEWGAME => NEWGAME, -- Collegato diretto a BTN(1)
+        HOLD    => HOLD,    -- Collegato diretto a BTN(1)
+        NEWGAME => NEWGAME, -- Collegato diretto a BTN(2)
         ENADIE  => ENADIE,
         LDSU    => LDSU,
         LDT1    => LDT1,
@@ -166,14 +176,43 @@ begin
         DIE1    => DIE1,
         WN      => WIN
     ); 
-    
-    -- =========================================================================
-    -- PROCESSI ACCESSORI
-    -- =========================================================================
-    
-    -- Visualizza il giocatore corrente sul LED 15
 
+    debouncer_roll : debouncer
+    generic map(
+        counter_size => 20
+    )
+    port map(
+        clock     => CLK,
+        reset     => RST,
+        bouncy    => BTN(0),
+        pulse     => open,
+        debounced => ROLL
+    );
+
+    debouncer_hold : debouncer
+    generic map(
+        counter_size => 20
+    )
+    port map(
+        clock     => CLK,
+        reset     => RST,
+        bouncy    => BTN(1),
+        pulse     => open,
+        debounced => HOLD
+    );
+
+    debouncer_new : debouncer
+    generic map(
+        counter_size => 20
+    )
+    port map(
+        clock     => CLK,
+        reset     => RST,
+        bouncy    => BTN(2),
+        pulse     => open,
+        debounced => NEWGAME
+    );
     
-
-
+    LED(15) <= CP;
+    LED(14 downto 3) <= (others => '0');
 end behavioural;
