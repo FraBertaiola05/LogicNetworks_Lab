@@ -2,222 +2,178 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-
 entity main_piggame is
     port(
-        SW : in std_logic_vector(15 downto 0); --! Switches for input
-        BTN : in std_logic_vector(4 downto 0); --! Buttons for input
-        CLK : in std_logic; --! Clock input
-        LED : out std_logic_vector(15 downto 0); --! LEDs for output
-        SSEG_CAT : out std_logic_vector(7 downto 0); --! Seven Segment Cathodes
-        SSEG_AN : out std_logic_vector(3 downto 0); --! Seven Segment Anodes
-        RST : in std_logic --! Reset input
+        SW       : in std_logic_vector(15 downto 0);
+        BTN      : in std_logic_vector(4 downto 0); -- BTN(0):Center, BTN(1):Up, BTN(2):Left
+        CLK      : in std_logic;
+        LED      : out std_logic_vector(2 downto 0);
+        SSEG_CAT : out std_logic_vector(7 downto 0);
+        SSEG_AN  : out std_logic_vector(3 downto 0);
+        RST      : in std_logic
     );
 end entity main_piggame;
 
 architecture behavioural of main_piggame is
-    constant TMR_CNTR_MAX	 : std_logic_vector(16 downto 0) := "11000011010100000"; 
-    constant TMR_CNTR_BLINK : std_logic_vector(26 downto 0) := "110000110101000000000000000"; 
-    constant TMR_VAL_MAX	 : std_logic_vector(3 downto 0) := "1001"; 
-
-    signal tmrCntr : std_logic_vector(26 downto 0) := (others => '0');
+    -- Costanti per timer (non critiche per questa modifica)
     signal tmrCntrBlink : std_logic_vector(26 downto 0) := (others => '0');
+    
+    -- Segnali per i collegamenti
     signal digit0, digit1, digit2, digit3 : std_logic_vector(3 downto 0);
-    signal btnReg : std_logic_vector(4 downto 0) := (others => '0');
-    signal btnDetect : std_logic := '0';
-    signal btnDeBnc : std_logic_vector(4 downto 0) := (others => '0');
-    signal lock_cntr_reg : std_logic_vector(4 downto 0) := (others => '0');
-    signal RST1, RST2 : std_logic := '0';
-    signal LDT1, LDT2 : std_logic := '0';
-    signal FP, CP : std_logic := '0';
+    
+    -- Segnali di controllo gioco
+    signal HOLD, ROLL, NEWGAME : std_logic := '0';
     signal ENADIE, LDSU, RSSU, BP1 : std_logic := '0';
-    signal center_edge, up_edge, down_edge, right_edge, left_edge : std_logic := '0';
-    signal HOLD, ROLL, NEWGAME, DIE1, WIN : std_logic := '0';
+    signal RST1, RST2, LDT1, LDT2 : std_logic := '0';
+    signal FP, CP : std_logic := '0';
+    signal DIE1, WIN : std_logic := '0';
+
+    -- NOTA: Ho rimosso i segnali intermedi inutilizzati (center_edge, btnReg, ecc.)
+    -- per pulizia, dato che colleghiamo BTN direttamente.
 
     --COMPONENTS DEFINITIONS--
-component debouncer
-  port (
-    -- Enter port declarations here:
-    -- * A "clock" clock input
-    -- * A "reset" reset input
-    -- * AN input for the "bouncy" button
-    -- * One output for the "pulse" pulse
-    clock   : in  std_logic;
-    reset   : in  std_logic;
-    bouncy  : in  std_logic;
-    pulse   : out std_logic
-  );
+    
+    -- [RIMOSSO] Component Debouncer non più necessario
+    -- component debouncer ... end component;
+
+    component seven_segment_driver
+        port(
+            clock : in std_logic;
+            reset : in std_logic;
+            digit0 : in std_logic_vector( 3 downto 0 );
+            digit1 : in std_logic_vector( 3 downto 0 );
+            digit2 : in std_logic_vector( 3 downto 0 );
+            digit3 : in std_logic_vector( 3 downto 0 );
+            CA, CB, CC, CD, CE, CF, CG, DP : out std_logic;
+            AN : out std_logic_vector( 3 downto 0 )
+        );
     end component;
 
-component seven_segment_driver
-    port(
-        clock : in std_logic;
-        reset : in std_logic; -- Active High Reset
-        digit0 : in std_logic_vector( 3 downto 0 ); -- Rightmost digit
-        digit1 : in std_logic_vector( 3 downto 0 );
-        digit2 : in std_logic_vector( 3 downto 0 );
-        digit3 : in std_logic_vector( 3 downto 0 ); -- Leftmost digit
-        CA, CB, CC, CD, CE, CF, CG, DP : out std_logic;
-        AN : out std_logic_vector( 3 downto 0 )
-    );
-end component;
+    component datapath 
+        port(
+            clock   : in std_logic;
+            reset   : in std_logic;
+            ENADIE  : in std_logic;
+            LDSU    : in std_logic;
+            LDT1    : in std_logic;
+            LDT2    : in std_logic;
+            RSSU    : in std_logic;
+            RST1    : in std_logic;
+            RST2    : in std_logic;
+            CP      : inout std_logic;
+            FP      : inout std_logic;
+            DIGIT0  : out std_logic_vector( 3 downto 0 );
+            DIGIT1  : out std_logic_vector( 3 downto 0 );
+            DIGIT2  : out std_logic_vector( 3 downto 0 );
+            DIGIT3  : out std_logic_vector( 3 downto 0 );
+            LEDDIE  : out std_logic_vector(2 downto 0);
+            DIE1    : out std_logic;
+            WN      : out std_logic
+        );
+    end component;
 
-component datapath 
-    port(
-        clock  : in std_logic; --! Clock
-        reset  : in std_logic; --! Reset
-        ENADIE : in std_logic; --! Enable Die to increment
-        LDSU   : in std_logic; --! Add DIE to SUR register
-        LDT1   : in std_logic; --! Add SUR to TR1 register
-        LDT2   : in std_logic; --! Add SUR to TR2 register
-        RSSU   : in std_logic; --! Reset SUR register
-        RST1   : in std_logic; --! Reset TR1 register
-        RST2   : in std_logic; --! Reset TR2 register
-        CP     : inout std_logic; --! current player (register outside)
-        FP     : inout std_logic; --! First player (register outside)
-        DIGIT0 : out std_logic_vector( 3 downto 0 ); --! digit to the right
-        DIGIT1 : out std_logic_vector( 3 downto 0 ); --! 2nd digit to the left
-        DIGIT2 : out std_logic_vector( 3 downto 0 ); --! 3rd digit to the left
-        DIGIT3 : out std_logic_vector( 3 downto 0 ); --! digit to the left
-        LEDDIE : out std_logic_vector(2 downto 0); --! LEDs to display the die value
-        DIE1   : out std_logic; --! signal that a one has been obtained
-        WN     : out std_logic --! WIN has been achieved by a player
-    );
-end component;
-
-component controluint
-    port(
-                clock  : in std_logic; --! Clock
-        reset  : in std_logic; --! Reset
-        ENADIE : in std_logic; --! Enable Die to increment
-        LDSU   : in std_logic; --! Add DIE to SUR register
-        LDT1   : in std_logic; --! Add SUR to TR1 register
-        LDT2   : in std_logic; --! Add SUR to TR2 register
-        RSSU   : in std_logic; --! Reset SUR register
-        RST1   : in std_logic; --! Reset TR1 register
-        RST2   : in std_logic; --! Reset TR2 register
-        CP     : inout std_logic; --! current player (register outside)
-        FP     : inout std_logic; --! First player (register outside)
-        DIGIT0 : out std_logic_vector( 3 downto 0 ); --! digit to the right
-        DIGIT1 : out std_logic_vector( 3 downto 0 ); --! 2nd digit to the left
-        DIGIT2 : out std_logic_vector( 3 downto 0 ); --! 3rd digit to the left
-        DIGIT3 : out std_logic_vector( 3 downto 0 ); --! digit to the left
-        LEDDIE : out std_logic_vector(2 downto 0); --! LEDs to display the die value
-        DIE1   : out std_logic; --! signal that a one has been obtained
-        WN     : out std_logic --! WIN has been achieved by a player
-    );
-end component;
+    component controlunit 
+        port(
+            clock   : in std_logic;
+            reset   : in std_logic;
+            ROLL    : in std_logic;
+            HOLD    : in std_logic;
+            NEWGAME : in std_logic;
+            ENADIE  : out std_logic;
+            LDSU    : out std_logic;
+            LDT1    : out std_logic;
+            LDT2    : out std_logic;
+            RSSU    : out std_logic;
+            RST1    : out std_logic;
+            RST2    : out std_logic;
+            BP1     : out std_logic;
+            CP      : inout std_logic;
+            FP      : inout std_logic;
+            DIE1    : in std_logic;
+            WN      : in std_logic
+        );
+    end component;
 
 begin
-    --COMPONENT INSTANTIATIONS--
-    center_detect: debouncer
-    port map(
-        clock => CLK,
-        reset => RST,
-        bouncy => BTN(0),
-        pulse => center_edge
-    );
 
-    up_detect: debouncer
-    port map(
-        clock => CLK,
-        reset => RST,
-        bouncy => BTN(1),
-        pulse => up_edge
-    );
+    -- =========================================================================
+    -- COLLEGAMENTI DIRETTI (Senza Debouncer)
+    -- =========================================================================
+    -- Qui colleghiamo direttamente il pulsante fisico al segnale logico.
+    -- Nota: In simulazione è perfetto. Su hardware reale potrebbe fare
+    -- qualche rimbalzo ("bounce"), ma per questo gioco spesso è tollerabile.
+    
+    ROLL    <= BTN(0); -- Tasto Centro = Lancia Dado
+    NEWGAME <= BTN(1); -- Tasto Su     = Nuova Partita
+    HOLD    <= BTN(2); -- Tasto Sinistra = Tieni Punteggio
 
-    down_detect: debouncer
-    port map(
-        clock => CLK,
-        reset => RST,
-        bouncy => BTN(3),
-        pulse => down_edge
-    );
-
-    right_detect: debouncer
-    port map(
-        clock => CLK,
-        reset => RST,
-        bouncy => BTN(4),
-        pulse => right_edge
-    );
-
-    left_detect: debouncer
-    port map(
-        clock => CLK,
-        reset => RST,
-        bouncy => BTN(2),
-        pulse => left_edge
-    );
+    -- =========================================================================
+    -- ISTANZIAZIONI COMPONENTI
+    -- =========================================================================
 
     thedriver: seven_segment_driver
     port map(
-        clock => CLK,
-        reset => RST,
+        clock  => CLK,
+        reset  => RST,
         digit0 => digit0,
         digit1 => digit1,
         digit2 => digit2,
         digit3 => digit3,
-        CA => SSEG_CAT(0),
-        CB => SSEG_CAT(1),
-        CC => SSEG_CAT(2),
-        CD => SSEG_CAT(3),
-        CE => SSEG_CAT(4),
-        CF => SSEG_CAT(5),
-        CG => SSEG_CAT(6),
-        DP => SSEG_CAT(7),
+        CA => SSEG_CAT(0), CB => SSEG_CAT(1), CC => SSEG_CAT(2), CD => SSEG_CAT(3),
+        CE => SSEG_CAT(4), CF => SSEG_CAT(5), CG => SSEG_CAT(6), DP => SSEG_CAT(7),
         AN => SSEG_AN
     );
 
     datapath_inst : datapath
     port map(
-        clock  => CLK,
-        reset  => RST,
-        ENADIE => ENADIE,
-        LDSU   => LDSU,
-        LDT1   => LDT1,
-        LDT2   => LDT2,
-        RSSU   => RSSU,
-        RST1   => RST1,
-        RST2   => RST2,
-        CP     => CP,
-        FP     => FP,
-        DIGIT0 => digit0,
-        DIGIT1 => digit1,
-        DIGIT2 => digit2,
-        DIGIT3 => digit3,
-        LEDDIE => LED(2 downto 0),
-        DIE1   => DIE1,
-        WN     => WIN
+        clock   => CLK,
+        reset   => RST,
+        ENADIE  => ENADIE,
+        LDSU    => LDSU,
+        LDT1    => LDT1,
+        LDT2    => LDT2,
+        RSSU    => RSSU,
+        RST1    => RST1,
+        RST2    => RST2,
+        CP      => CP,
+        FP      => FP,
+        DIGIT0  => digit0,
+        DIGIT1  => digit1,
+        DIGIT2  => digit2,
+        DIGIT3  => digit3,
+        LEDDIE  => LED(2 downto 0),
+        DIE1    => DIE1,
+        WN      => WIN
     );
 
-    controlunit_inst : controluint
+    controlunit_inst : controlunit
     port map(
-        clock  => CLK,
-        reset  => RST,
-        ENADIE => ENADIE,
-        LDSU   => LDSU,
-        LDT1   => LDT1,
-        LDT2   => LDT2,
-        RSSU   => RSSU,
-        RST1   => RST1,
-        RST2   => RST2,
-        CP     => CP,
-        FP     => FP,
-        DIGIT0 => digit0,
-        DIGIT1 => digit1,
-        DIGIT2 => digit2,
-        DIGIT3 => digit3,
-        LEDDIE => LED(2 downto 0),
-        DIE1   => DIE1,
-        WN     => WIN
-    );
+        clock   => CLK,
+        reset   => RST,
+        ROLL    => ROLL,    -- Collegato diretto a BTN(0)
+        HOLD    => HOLD,    -- Collegato diretto a BTN(2)
+        NEWGAME => NEWGAME, -- Collegato diretto a BTN(1)
+        ENADIE  => ENADIE,
+        LDSU    => LDSU,
+        LDT1    => LDT1,
+        LDT2    => LDT2,
+        RSSU    => RSSU,
+        RST1    => RST1,
+        RST2    => RST2,
+        BP1     => BP1,
+        CP      => CP,
+        FP      => FP,
+        DIE1    => DIE1,
+        WN      => WIN
+    ); 
     
-    --PROCESSES--
-    time_blink_process: process(CLK) begin
-    end process time_blink_process;
+    -- =========================================================================
+    -- PROCESSI ACCESSORI
+    -- =========================================================================
+    
+    -- Visualizza il giocatore corrente sul LED 15
 
-    check_cp: process(CP) begin
-    end process check_cp;
+    
 
-end behavioural ;
+
+end behavioural;

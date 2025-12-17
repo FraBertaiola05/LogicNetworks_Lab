@@ -18,10 +18,6 @@
 -- 
 ----------------------------------------------------------------------------------
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.std_logic_unsigned.all;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -109,15 +105,15 @@ Main_process : process(clock,reset) begin
                 SUR <= (others => '0');
             end if;
             if LDT1 = '1' then
-                TR1 <= TR1 + SUR;
+                TR1 <= std_logic_vector(unsigned(TR1) + unsigned(SUR));
             end if;
             if LDT2 = '1' then
-                TR2 <= TR2 + SUR;
+                TR2 <= std_logic_vector(unsigned(TR2) + unsigned(SUR));
             end if;
             if ENADIE = '1' then
                 case DIE is
                     when "110" => DIE <= "001";
-                    when others => DIE <= DIE +1;
+                    when others => DIE <= std_logic_vector(unsigned(DIE) + 1);
                 end case;
             end if;
             if DIE ="001" then
@@ -126,7 +122,7 @@ Main_process : process(clock,reset) begin
                 DIE1 <= '0';
             end if;
             if LDSU = '1' then
-                SUR <= SUR + (frontbits & DIE);
+                SUR <= std_logic_vector(unsigned(SUR) + unsigned(frontbits & DIE));
             end if;
             if CP ='1' then
                 D <= TR2;
