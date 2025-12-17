@@ -89,6 +89,7 @@ inst_bin2BCD2 : binbcd
     digit0 => bcd3, --resulting BCD number- for TR2
     digit1 => bcd4);
 --------------------------------
+
 Main_process : process(clock,reset) begin
     if reset = '1' then
         -- reset
