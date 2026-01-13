@@ -11,9 +11,10 @@ architecture Behavioral of main_piggame_tb is
     -- Component Declaration for the Unit Under Test (UUT)
     component main_piggame
     port(
+        SW       : in std_logic_vector(15 downto 0);
         BTN      : in std_logic_vector(4 downto 0);
         CLK      : in std_logic;
-        LED      : out std_logic_vector(15 downto 0);
+        LED      : out std_logic_vector(2 downto 0);
         SSEG_CAT : out std_logic_vector(7 downto 0);
         SSEG_AN  : out std_logic_vector(3 downto 0);
         RST      : in std_logic
@@ -21,6 +22,7 @@ architecture Behavioral of main_piggame_tb is
     end component;
 
     -- Inputs
+    signal SW  : std_logic_vector(15 downto 0) := (others => '0');
     signal BTN : std_logic_vector(4 downto 0) := (others => '0');
     signal CLK : std_logic := '0';
     signal RST : std_logic := '0';
@@ -38,9 +40,9 @@ architecture Behavioral of main_piggame_tb is
     constant BTN_PRESS_TIME : time := 60 us; 
 
 begin
-
     -- Instantiate the Unit Under Test (UUT)
     uut: main_piggame port map (
+        SW       => SW,
         BTN      => BTN,
         CLK      => CLK,
         LED      => LED,
@@ -118,9 +120,9 @@ begin
 
         -- 6. AZIONE: HOLD
         report "Simulazione: Player 1 preme HOLD";
-        BTN(1) <= '1';
+        BTN(2) <= '1';
         wait for BTN_PRESS_TIME;
-        BTN(1) <= '0';
+        BTN(2) <= '0';
 
         ------------------------------------------------------------
         -- NUOVA PARTITA
@@ -128,9 +130,9 @@ begin
         wait for 500 ns;
         report "Simulazione: Richiesta NEW GAME";
         -- Tasto Su - BTN(1)
-        BTN(2) <= '1';
+        BTN(1) <= '1';
         wait for BTN_PRESS_TIME;
-        BTN(2) <= '0';
+        BTN(1) <= '0';
 
         wait for 100 ns;
 
