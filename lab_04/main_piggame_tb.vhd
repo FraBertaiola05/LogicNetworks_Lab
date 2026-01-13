@@ -118,9 +118,9 @@ begin
 
         -- 6. AZIONE: HOLD
         report "Simulazione: Player 1 preme HOLD";
-        BTN(2) <= '1';
+        BTN(1) <= '1';
         wait for BTN_PRESS_TIME;
-        BTN(2) <= '0';
+        BTN(1) <= '0';
 
         ------------------------------------------------------------
         -- NUOVA PARTITA
@@ -128,9 +128,9 @@ begin
         wait for 500 ns;
         report "Simulazione: Richiesta NEW GAME";
         -- Tasto Su - BTN(1)
-        BTN(1) <= '1';
+        BTN(2) <= '1';
         wait for BTN_PRESS_TIME;
-        BTN(1) <= '0';
+        BTN(2) <= '0';
 
         wait for 100 ns;
 
