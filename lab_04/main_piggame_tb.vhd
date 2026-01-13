@@ -21,7 +21,6 @@ architecture Behavioral of main_piggame_tb is
     end component;
 
     -- Inputs
-    signal SW  : std_logic_vector(15 downto 0) := (others => '0');
     signal BTN : std_logic_vector(4 downto 0) := (others => '0');
     signal CLK : std_logic := '0';
     signal RST : std_logic := '0';
@@ -42,7 +41,6 @@ begin
 
     -- Instantiate the Unit Under Test (UUT)
     uut: main_piggame port map (
-        SW       => SW,
         BTN      => BTN,
         CLK      => CLK,
         LED      => LED,
