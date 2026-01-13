@@ -11,10 +11,9 @@ architecture Behavioral of main_piggame_tb is
     -- Component Declaration for the Unit Under Test (UUT)
     component main_piggame
     port(
-        SW       : in std_logic_vector(15 downto 0);
         BTN      : in std_logic_vector(4 downto 0);
         CLK      : in std_logic;
-        LED      : out std_logic_vector(2 downto 0);
+        LED      : out std_logic_vector(15 downto 0);
         SSEG_CAT : out std_logic_vector(7 downto 0);
         SSEG_AN  : out std_logic_vector(3 downto 0);
         RST      : in std_logic
